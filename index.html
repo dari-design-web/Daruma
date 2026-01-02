@@ -1,421 +1,458 @@
-import React, { useState } from 'react';
-
-// 獎項資料
-const PRIZES = [
-  { 
-    level: "大吉", 
-    color: "text-orange-600", 
-    title: "心想事成 萬事如意", 
-    desc: "長久以來的努力將在近期開花結果。適合嘗試新事物，會有意想不到的收穫喔！",
-    bg: "from-orange-100 to-white"
-  },
-  { 
-    level: "上吉", 
-    color: "text-rose-600", 
-    title: "福氣滿滿 步步高升", 
-    desc: "工作與生活都將迎來好消息，保持積極的心態，好運會一直跟隨著你。",
-    bg: "from-rose-100 to-white"
-  },
-  { 
-    level: "萬吉", 
-    color: "text-purple-600", 
-    title: "萬事大吉 喜氣洋洋", 
-    desc: "快樂的事情接二連三發生，煩惱通通拋到腦後，享受這段美好的時光吧！",
-    bg: "from-purple-100 to-white"
-  },
-  { 
-    level: "大發", 
-    color: "text-yellow-600", 
-    title: "財源滾滾 富貴盈門", 
-    desc: "財運亨通的一天！不論是投資還是小賭怡情，都有機會獲得不錯的回報。",
-    bg: "from-yellow-100 to-white"
-  },
-  { 
-    level: "大興", 
-    color: "text-emerald-600", 
-    title: "興旺發達 蒸蒸日上", 
-    desc: "事業或學業運勢特別強，新的計畫進展順利，是衝刺的好時機！",
-    bg: "from-emerald-100 to-white"
-  },
-  { 
-    level: "亨通", 
-    color: "text-cyan-600", 
-    title: "運勢亨通 暢行無阻", 
-    desc: "之前的阻礙都將迎刃而解，眼前一片光明，大步向前邁進吧！",
-    bg: "from-cyan-100 to-white"
-  },
-  { 
-    level: "如意", 
-    color: "text-pink-600", 
-    title: "稱心如意 順心順意", 
-    desc: "生活中的小細節都讓你感到舒適愉快，好好享受這份平靜與美好。",
-    bg: "from-pink-100 to-white"
-  },
-  { 
-    level: "吉祥", 
-    color: "text-indigo-600", 
-    title: "吉星高照 祥雲瑞氣", 
-    desc: "平平安安就是福，身邊的人都會被你的好氣場感染，人際關係大加分。",
-    bg: "from-indigo-100 to-white"
-  },
-  { 
-    level: "鴻運", 
-    color: "text-red-700", 
-    title: "鴻運當頭 氣勢如虹", 
-    desc: "氣場強大的一天，充滿自信與魅力，今天的主角就是你！",
-    bg: "from-red-200 to-orange-100"
-  },
-  { 
-    level: "超吉", 
-    color: "text-red-600", 
-    title: "瑞氣千條 勢不可擋", 
-    desc: "運勢好到連自己都會嚇一跳！想做什麼就放手去做，幸運女神站在你這邊！",
-    bg: "from-yellow-200 to-red-100"
-  }
-];
-
-export default function App() {
-  const [gameState, setGameState] = useState('idle'); // idle, shaking, popping, reveal
-  const [currentPrize, setCurrentPrize] = useState(null);
-  
-  // 處理抽籤邏輯
-  const handleDraw = () => {
-    if (gameState !== 'idle') return;
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>幸運福吉兔每日運勢</title>
     
-    // 1. 開始搖晃
-    setGameState('shaking');
+    <!-- 載入 React 和 ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    // 隨機選獎品
-    const randomPrize = PRIZES[Math.floor(Math.random() * PRIZES.length)];
-    setCurrentPrize(randomPrize);
+    <!-- 載入 Babel 用來解析 JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-    // 2. 搖晃 1.2秒後，籤微微跳出 (popping)
-    setTimeout(() => {
-      setGameState('popping');
-      
-      // 3. 微微跳出 0.8秒後，進入結果畫面 (reveal)
-      setTimeout(() => {
-        setGameState('reveal');
-      }, 1000);
-      
-    }, 1200);
-  };
+    <!-- 設定 Tailwind 的字型與顏色變數 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Microsoft JhengHei', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* 避免手機長按選取文字 */
+        body {
+            -webkit-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-  const resetGame = () => {
-    setGameState('idle');
-    setCurrentPrize(null);
-  };
+    <script type="text/babel">
+        const { useState } = React;
 
-  return (
-    <div className="relative w-full h-screen bg-[#FFF5E6] overflow-hidden font-sans flex flex-col items-center justify-center selection:bg-red-200">
-      
-      {/* 背景裝飾：日式雲紋/圓點 (純CSS裝飾) */}
-      <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
-        <div className="absolute top-10 left-10 w-32 h-32 bg-red-300 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-48 h-48 bg-yellow-300 rounded-full blur-3xl"></div>
-      </div>
+        // 獎項資料
+        const PRIZES = [
+            { 
+                level: "大吉", 
+                color: "text-orange-600", 
+                title: "心想事成 萬事如意", 
+                desc: "長久以來的努力將在近期開花結果。適合嘗試新事物，會有意想不到的收穫喔！",
+                bg: "from-orange-100 to-white"
+            },
+            { 
+                level: "上吉", 
+                color: "text-rose-600", 
+                title: "福氣滿滿 步步高升", 
+                desc: "工作與生活都將迎來好消息，保持積極的心態，好運會一直跟隨著你。",
+                bg: "from-rose-100 to-white"
+            },
+            { 
+                level: "萬吉", 
+                color: "text-purple-600", 
+                title: "萬事大吉 喜氣洋洋", 
+                desc: "快樂的事情接二連三發生，煩惱通通拋到腦後，享受這段美好的時光吧！",
+                bg: "from-purple-100 to-white"
+            },
+            { 
+                level: "大發", 
+                color: "text-yellow-600", 
+                title: "財源滾滾 富貴盈門", 
+                desc: "財運亨通的一天！不論是投資還是小賭怡情，都有機會獲得不錯的回報。",
+                bg: "from-yellow-100 to-white"
+            },
+            { 
+                level: "大興", 
+                color: "text-emerald-600", 
+                title: "興旺發達 蒸蒸日上", 
+                desc: "事業或學業運勢特別強，新的計畫進展順利，是衝刺的好時機！",
+                bg: "from-emerald-100 to-white"
+            },
+            { 
+                level: "亨通", 
+                color: "text-cyan-600", 
+                title: "運勢亨通 暢行無阻", 
+                desc: "之前的阻礙都將迎刃而解，眼前一片光明，大步向前邁進吧！",
+                bg: "from-cyan-100 to-white"
+            },
+            { 
+                level: "如意", 
+                color: "text-pink-600", 
+                title: "稱心如意 順心順意", 
+                desc: "生活中的小細節都讓你感到舒適愉快，好好享受這份平靜與美好。",
+                bg: "from-pink-100 to-white"
+            },
+            { 
+                level: "吉祥", 
+                color: "text-indigo-600", 
+                title: "吉星高照 祥雲瑞氣", 
+                desc: "平平安安就是福，身邊的人都會被你的好氣場感染，人際關係大加分。",
+                bg: "from-indigo-100 to-white"
+            },
+            { 
+                level: "鴻運", 
+                color: "text-red-700", 
+                title: "鴻運當頭 氣勢如虹", 
+                desc: "氣場強大的一天，充滿自信與魅力，今天的主角就是你！",
+                bg: "from-red-200 to-orange-100"
+            },
+            { 
+                level: "超吉", 
+                color: "text-red-600", 
+                title: "瑞氣千條 勢不可擋", 
+                desc: "運勢好到連自己都會嚇一跳！想做什麼就放手去做，幸運女神站在你這邊！",
+                bg: "from-yellow-200 to-red-100"
+            }
+        ];
 
-      {/* --- 主畫面區域 --- */}
-      <div className={`relative z-10 flex flex-col items-center transition-all duration-500 ${gameState === 'reveal' ? 'scale-90 opacity-0 blur-sm' : 'opacity-100 scale-100'}`}>
-        
-        {/* 標題 */}
-        <h1 className="mb-12 text-3xl font-bold text-gray-800 tracking-widest bg-white/60 px-8 py-3 rounded-full backdrop-blur-sm shadow-sm border border-red-100">
-          每日運勢抽籤
-        </h1>
+        // 最終修正版 SVG
+        function FinalRabbitDaruma() {
+            return (
+                <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="darumaGradient" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(150 180) rotate(90) scale(140 160)">
+                    <stop stopColor="#FF4D4D" />
+                    <stop offset="0.6" stopColor="#D91A1A" />
+                    <stop offset="1" stopColor="#990000" />
+                    </radialGradient>
+                    
+                    <linearGradient id="goldGradient" x1="150" y1="180" x2="150" y2="280" gradientUnits="userSpaceOnUse">
+                    <stop stopColor="#FFEA85" />
+                    <stop offset="1" stopColor="#FFD700" />
+                    </linearGradient>
 
-        {/* 達摩與籤筒容器 */}
-        <div className="relative w-80 h-80 flex justify-center items-end">
-          
-          {/* 籤 (位於達摩後方) */}
-          {/* idle狀態: bottom-[20px] 確保完全隱藏 */}
-          {/* popping狀態: bottom-[140px] (修正：只比耳朵高一點點，之前是200px太高了) */}
-          <div 
-            className={`absolute w-8 h-40 bg-[#F2D6A2] border-2 border-[#8B5E3C] rounded-t-full z-0 shadow-inner transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1)
-              ${gameState === 'popping' ? 'bottom-[140px]' : 'bottom-[20px]'}
-            `}
-          >
-            {/* 這裡故意不放文字 */}
-          </div>
+                    <filter id="softGlow" x="-10" y="0" width="320" height="320" filterUnits="userSpaceOnUse">
+                    <feDropShadow dx="0" dy="5" stdDeviation="6" floodColor="#990000" floodOpacity="0.3" />
+                    </filter>
+                </defs>
 
-          {/* 達摩 SVG 組件 - 放在籤的前面 (z-10) */}
-          <div className={`relative z-10 origin-bottom transition-transform duration-100 filter drop-shadow-xl
-            ${gameState === 'shaking' ? 'animate-shake' : ''}
-          `}>
-             <FinalRabbitDaruma />
-          </div>
-        </div>
-
-        {/* 抽籤按鈕 */}
-        <button 
-          onClick={handleDraw}
-          disabled={gameState !== 'idle'}
-          className={`mt-12 px-12 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white text-2xl font-bold rounded-full shadow-[0_6px_0_#7f1d1d] 
-            transform transition-all duration-200 active:shadow-none active:translate-y-[6px]
-            ${gameState !== 'idle' ? 'opacity-50 cursor-not-allowed shadow-none translate-y-[6px]' : 'hover:-translate-y-1 hover:shadow-[0_8px_0_#7f1d1d]'}
-          `}
-        >
-          {gameState === 'idle' ? '開始抽籤' : '祈願中...'}
-        </button>
-
-      </div>
-
-      {/* --- 結果覆蓋層 (Modal) --- */}
-      {gameState === 'reveal' && currentPrize && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden">
-          
-          {/* 1. 黑色半透明背景 */}
-          <div className="absolute inset-0 bg-black/90 animate-fadeIn backdrop-blur-sm"></div>
-
-          {/* 2. 旋轉光芒背景 (Rotating Rays) - 超大圓形覆蓋全畫面 */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-             <div className="w-[200vmax] h-[200vmax] bg-conic-gradient animate-spin-slow opacity-50 rounded-full"></div>
-          </div>
-
-          {/* 3. 結果卡片 (Pop In) */}
-          <div className="relative z-60 w-[85%] max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl transform animate-popIn border-4 border-yellow-500 ring-4 ring-yellow-200/50">
-            
-            {/* 卡片頂部裝飾 */}
-            <div className={`h-40 bg-gradient-to-b ${currentPrize.bg} flex items-center justify-center relative overflow-hidden`}>
-                <div className="absolute inset-0 opacity-20 bg-pattern-dots"></div>
-                <div className="text-9xl font-black text-black/5 absolute -bottom-6 -right-6 rotate-12">{currentPrize.level[0]}</div>
+                {/* 身體：圓潤蛋形/梨形，底部加寬 */}
+                <path 
+                    d="M60 180 C60 100 90 60 150 60 C210 60 240 100 240 180 C240 250 210 280 150 280 C90 280 60 250 60 180Z" 
+                    fill="url(#darumaGradient)" 
+                    stroke="#800000" 
+                    strokeWidth="0" 
+                    filter="url(#softGlow)"
+                />
                 
-                {/* 顯示抽出的那根籤 - 這裡才有字 */}
-                <div className="animate-stickDrop absolute top-0">
-                    <div className="w-16 h-52 bg-[#F2D6A2] border-x-4 border-[#D4B07B] flex items-center justify-center shadow-lg rounded-b-lg">
-                        <span className="text-4xl font-bold text-red-900 writing-vertical mt-8 tracking-widest">{currentPrize.level}</span>
-                    </div>
+                {/* 耳朵：加寬、移除內耳粉色、顏色與頭頂紅色一致 */}
+                {/* 左耳 */}
+                <path d="M120 70 C110 35 90 35 100 80 C105 90 125 90 120 70Z" fill="#D91A1A" />
+                {/* 右耳 */}
+                <path d="M180 70 C190 35 210 35 200 80 C195 90 175 90 180 70Z" fill="#D91A1A" />
+
+                {/* 臉部區域：米白色 (暖色調) */}
+                <path 
+                    d="M95 135 C95 105 115 95 150 95 C185 95 205 105 205 135 C205 160 185 170 150 170 C115 170 95 160 95 135Z" 
+                    fill="#FFF8F0" 
+                />
+
+                {/* 眉毛 */}
+                <path d="M115 120 Q125 115 130 120" stroke="#333" strokeWidth="3" strokeLinecap="round" fill="none" />
+                <path d="M170 120 Q175 115 185 120" stroke="#333" strokeWidth="3" strokeLinecap="round" fill="none" />
+
+                {/* 眼睛 */}
+                <circle cx="125" cy="132" r="6" fill="#222" />
+                <circle cx="175" cy="132" r="6" fill="#222" />
+                <circle cx="127" cy="130" r="2" fill="white" />
+                <circle cx="177" cy="130" r="2" fill="white" />
+
+                {/* 腮紅 */}
+                <circle cx="105" cy="140" r="8" fill="#FFB6C1" opacity="0.5" />
+                <circle cx="195" cy="140" r="8" fill="#FFB6C1" opacity="0.5" />
+
+                {/* 鼻子嘴巴 */}
+                <path d="M146 142 L154 142 L150 147 Z" fill="#FF9999" />
+                <path d="M150 147 Q145 153 140 150 M150 147 Q155 153 160 150" stroke="#333" strokeWidth="2" fill="none" strokeLinecap="round" />
+
+                {/* 肚子：超級大 */}
+                <circle cx="150" cy="225" r="50" fill="url(#goldGradient)" stroke="#FDB931" strokeWidth="4" />
+                
+                {/* 肚子文字 */}
+                <text 
+                    x="150" 
+                    y="228" 
+                    textAnchor="middle" 
+                    dominantBaseline="central" 
+                    fontSize="32" 
+                    fontWeight="900" 
+                    fill="#B22222"
+                    fontFamily="sans-serif"
+                    style={{ letterSpacing: '2px' }}
+                >
+                    福吉兔
+                </text>
+
+                {/* 肚子兩側裝飾線 */}
+                <path d="M70 200 Q90 220 70 250" stroke="#FFD700" strokeWidth="4" fill="none" opacity="0.6" strokeLinecap="round" />
+                <path d="M230 200 Q210 220 230 250" stroke="#FFD700" strokeWidth="4" fill="none" opacity="0.6" strokeLinecap="round" />
+                </svg>
+            );
+        }
+
+        function App() {
+            const [gameState, setGameState] = useState('idle'); // idle, shaking, popping, reveal
+            const [currentPrize, setCurrentPrize] = useState(null);
+            
+            // 處理抽籤邏輯
+            const handleDraw = () => {
+                if (gameState !== 'idle') return;
+                
+                // 1. 開始搖晃
+                setGameState('shaking');
+                
+                // 隨機選獎品
+                const randomPrize = PRIZES[Math.floor(Math.random() * PRIZES.length)];
+                setCurrentPrize(randomPrize);
+
+                // 2. 搖晃 1.2秒後，籤微微跳出 (popping)
+                setTimeout(() => {
+                setGameState('popping');
+                
+                // 3. 微微跳出 0.8秒後，進入結果畫面 (reveal)
+                setTimeout(() => {
+                    setGameState('reveal');
+                }, 1000);
+                
+                }, 1200);
+            };
+
+            const resetGame = () => {
+                setGameState('idle');
+                setCurrentPrize(null);
+            };
+
+            return (
+                <div className="relative w-full h-screen bg-[#FFF5E6] overflow-hidden font-sans flex flex-col items-center justify-center selection:bg-red-200">
+                
+                {/* 背景裝飾 */}
+                <div className="absolute top-0 left-0 w-full h-full opacity-20 pointer-events-none">
+                    <div className="absolute top-10 left-10 w-32 h-32 bg-red-300 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-10 right-10 w-48 h-48 bg-yellow-300 rounded-full blur-3xl"></div>
                 </div>
-            </div>
 
-            {/* 卡片內容 */}
-            <div className="p-8 text-center bg-white relative">
-               <div className="inline-block px-4 py-1 rounded-full bg-red-100 text-red-600 text-sm font-bold mb-4">
-                 #{currentPrize.level}運勢
-               </div>
-               
-               <h2 className={`text-5xl font-extrabold mb-4 ${currentPrize.color} drop-shadow-sm`}>
-                 {currentPrize.level}
-               </h2>
-               
-               <h3 className="text-xl font-bold text-gray-800 mb-4 border-b-2 border-dashed border-gray-200 pb-4 mx-4">
-                 {currentPrize.title}
-               </h3>
-               
-               <p className="text-gray-600 leading-relaxed text-lg">
-                 {currentPrize.desc}
-               </p>
+                {/* --- 主畫面區域 --- */}
+                <div className={`relative z-10 flex flex-col items-center transition-all duration-500 ${gameState === 'reveal' ? 'scale-90 opacity-0 blur-sm' : 'opacity-100 scale-100'}`}>
+                    
+                    {/* 標題 */}
+                    <h1 className="mb-12 text-3xl font-bold text-gray-800 tracking-widest bg-white/60 px-8 py-3 rounded-full backdrop-blur-sm shadow-sm border border-red-100">
+                    每日運勢抽籤
+                    </h1>
 
-               <button 
-                 onClick={resetGame}
-                 className="mt-8 w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-700 transition-colors shadow-lg"
-               >
-                 收下祝福
-               </button>
-            </div>
-          </div>
-        </div>
-      )}
+                    {/* 達摩與籤筒容器 */}
+                    <div className="relative w-80 h-80 flex justify-center items-end">
+                    
+                    {/* 籤 */}
+                    <div 
+                        className={`absolute w-8 h-40 bg-[#F2D6A2] border-2 border-[#8B5E3C] rounded-t-full z-0 shadow-inner transition-all duration-500 cubic-bezier(0.34, 1.56, 0.64, 1)
+                        ${gameState === 'popping' ? 'bottom-[140px]' : 'bottom-[20px]'}
+                        `}
+                    ></div>
 
-      {/* --- CSS 動畫定義 --- */}
-      <style>{`
-        /* 達摩搖晃動畫 - 微幅晃動 */
-        @keyframes shake {
-          0% { transform: rotate(0deg); }
-          25% { transform: rotate(5deg); }
-          50% { transform: rotate(-5deg); }
-          75% { transform: rotate(3deg); }
-          100% { transform: rotate(0deg); }
+                    {/* 達摩 SVG 組件 */}
+                    <div className={`relative z-10 origin-bottom transition-transform duration-100 filter drop-shadow-xl
+                        ${gameState === 'shaking' ? 'animate-shake' : ''}
+                    `}>
+                        <FinalRabbitDaruma />
+                    </div>
+                    </div>
+
+                    {/* 抽籤按鈕 */}
+                    <button 
+                    onClick={handleDraw}
+                    disabled={gameState !== 'idle'}
+                    className={`mt-12 px-12 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white text-2xl font-bold rounded-full shadow-[0_6px_0_#7f1d1d] 
+                        transform transition-all duration-200 active:shadow-none active:translate-y-[6px]
+                        ${gameState !== 'idle' ? 'opacity-50 cursor-not-allowed shadow-none translate-y-[6px]' : 'hover:-translate-y-1 hover:shadow-[0_8px_0_#7f1d1d]'}
+                    `}
+                    >
+                    {gameState === 'idle' ? '開始抽籤' : '祈願中...'}
+                    </button>
+
+                </div>
+
+                {/* --- 結果覆蓋層 (Modal) --- */}
+                {gameState === 'reveal' && currentPrize && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden">
+                    
+                    {/* 1. 黑色半透明背景 */}
+                    <div className="absolute inset-0 bg-black/90 animate-fadeIn backdrop-blur-sm"></div>
+
+                    {/* 2. 旋轉光芒背景 */}
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-[200vmax] h-[200vmax] bg-conic-gradient animate-spin-slow opacity-50 rounded-full"></div>
+                    </div>
+
+                    {/* 3. 結果卡片 */}
+                    <div className="relative z-60 w-[85%] max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl transform animate-popIn border-4 border-yellow-500 ring-4 ring-yellow-200/50">
+                        
+                        {/* 卡片頂部裝飾 */}
+                        <div className={`h-40 bg-gradient-to-b ${currentPrize.bg} flex items-center justify-center relative overflow-hidden`}>
+                            <div className="absolute inset-0 opacity-20 bg-pattern-dots"></div>
+                            <div className="text-9xl font-black text-black/5 absolute -bottom-6 -right-6 rotate-12">{currentPrize.level[0]}</div>
+                            
+                            {/* 顯示抽出的那根籤 */}
+                            <div className="animate-stickDrop absolute top-0">
+                                <div className="w-16 h-52 bg-[#F2D6A2] border-x-4 border-[#D4B07B] flex items-center justify-center shadow-lg rounded-b-lg">
+                                    <span className="text-4xl font-bold text-red-900 writing-vertical mt-8 tracking-widest">{currentPrize.level}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 卡片內容 */}
+                        <div className="p-8 text-center bg-white relative">
+                        <div className="inline-block px-4 py-1 rounded-full bg-red-100 text-red-600 text-sm font-bold mb-4">
+                            #{currentPrize.level}運勢
+                        </div>
+                        
+                        <h2 className={`text-5xl font-extrabold mb-4 ${currentPrize.color} drop-shadow-sm`}>
+                            {currentPrize.level}
+                        </h2>
+                        
+                        <h3 className="text-xl font-bold text-gray-800 mb-4 border-b-2 border-dashed border-gray-200 pb-4 mx-4">
+                            {currentPrize.title}
+                        </h3>
+                        
+                        <p className="text-gray-600 leading-relaxed text-lg">
+                            {currentPrize.desc}
+                        </p>
+
+                        <button 
+                            onClick={resetGame}
+                            className="mt-8 w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-700 transition-colors shadow-lg"
+                        >
+                            收下祝福
+                        </button>
+                        </div>
+                    </div>
+                    </div>
+                )}
+
+                {/* CSS 動畫 */}
+                <style>{`
+                    @keyframes shake {
+                    0% { transform: rotate(0deg); }
+                    25% { transform: rotate(5deg); }
+                    50% { transform: rotate(-5deg); }
+                    75% { transform: rotate(3deg); }
+                    100% { transform: rotate(0deg); }
+                    }
+                    .animate-shake {
+                    animation: shake 0.4s infinite ease-in-out;
+                    transform-origin: center bottom;
+                    }
+
+                    .bg-conic-gradient {
+                    background: conic-gradient(
+                        from 0deg, 
+                        transparent 0deg, 
+                        transparent 15deg, 
+                        rgba(255, 223, 0, 0.6) 15deg, 
+                        rgba(255, 223, 0, 0.6) 30deg,
+                        transparent 30deg, 
+                        transparent 45deg, 
+                        rgba(255, 223, 0, 0.6) 45deg, 
+                        rgba(255, 223, 0, 0.6) 60deg,
+                        transparent 60deg, 
+                        transparent 75deg, 
+                        rgba(255, 223, 0, 0.6) 75deg, 
+                        rgba(255, 223, 0, 0.6) 90deg,
+                        transparent 90deg,
+                        transparent 105deg,
+                        rgba(255, 223, 0, 0.6) 105deg,
+                        rgba(255, 223, 0, 0.6) 120deg,
+                        transparent 120deg,
+                        transparent 135deg,
+                        rgba(255, 223, 0, 0.6) 135deg,
+                        rgba(255, 223, 0, 0.6) 150deg,
+                        transparent 150deg,
+                        transparent 165deg,
+                        rgba(255, 223, 0, 0.6) 165deg,
+                        rgba(255, 223, 0, 0.6) 180deg,
+                        transparent 180deg,
+                        transparent 195deg,
+                        rgba(255, 223, 0, 0.6) 195deg,
+                        rgba(255, 223, 0, 0.6) 210deg,
+                        transparent 210deg,
+                        transparent 225deg,
+                        rgba(255, 223, 0, 0.6) 225deg,
+                        rgba(255, 223, 0, 0.6) 240deg,
+                        transparent 240deg,
+                        transparent 255deg,
+                        rgba(255, 223, 0, 0.6) 255deg,
+                        rgba(255, 223, 0, 0.6) 270deg,
+                        transparent 270deg,
+                        transparent 285deg,
+                        rgba(255, 223, 0, 0.6) 285deg,
+                        rgba(255, 223, 0, 0.6) 300deg,
+                        transparent 300deg,
+                        transparent 315deg,
+                        rgba(255, 223, 0, 0.6) 315deg,
+                        rgba(255, 223, 0, 0.6) 330deg,
+                        transparent 330deg,
+                        transparent 345deg,
+                        rgba(255, 223, 0, 0.6) 345deg,
+                        rgba(255, 223, 0, 0.6) 360deg
+                    );
+                    }
+
+                    @keyframes spin-slow {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                    }
+                    .animate-spin-slow {
+                    animation: spin-slow 20s linear infinite;
+                    }
+
+                    @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                    }
+                    .animate-fadeIn {
+                    animation: fadeIn 0.3s ease-out forwards;
+                    }
+
+                    @keyframes popIn {
+                    0% { transform: scale(0.5); opacity: 0; }
+                    60% { transform: scale(1.05); opacity: 1; }
+                    100% { transform: scale(1); opacity: 1; }
+                    }
+                    .animate-popIn {
+                    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+                    animation-delay: 0.1s;
+                    opacity: 0;
+                    }
+
+                    @keyframes stickDrop {
+                    from { transform: translateY(-120%); }
+                    to { transform: translateY(0); }
+                    }
+                    .animate-stickDrop {
+                    animation: stickDrop 0.5s ease-out forwards;
+                    }
+
+                    .writing-vertical {
+                    writing-mode: vertical-rl;
+                    text-orientation: upright;
+                    }
+                `}</style>
+                </div>
+            );
         }
-        .animate-shake {
-          animation: shake 0.4s infinite ease-in-out;
-          transform-origin: center bottom;
-        }
 
-        /* 旋轉光芒背景 */
-        .bg-conic-gradient {
-          background: conic-gradient(
-            from 0deg, 
-            transparent 0deg, 
-            transparent 15deg, 
-            rgba(255, 223, 0, 0.6) 15deg, 
-            rgba(255, 223, 0, 0.6) 30deg,
-            transparent 30deg, 
-            transparent 45deg, 
-            rgba(255, 223, 0, 0.6) 45deg, 
-            rgba(255, 223, 0, 0.6) 60deg,
-            transparent 60deg, 
-            transparent 75deg, 
-            rgba(255, 223, 0, 0.6) 75deg, 
-            rgba(255, 223, 0, 0.6) 90deg,
-            transparent 90deg,
-            transparent 105deg,
-            rgba(255, 223, 0, 0.6) 105deg,
-            rgba(255, 223, 0, 0.6) 120deg,
-            transparent 120deg,
-            transparent 135deg,
-            rgba(255, 223, 0, 0.6) 135deg,
-            rgba(255, 223, 0, 0.6) 150deg,
-            transparent 150deg,
-            transparent 165deg,
-            rgba(255, 223, 0, 0.6) 165deg,
-            rgba(255, 223, 0, 0.6) 180deg,
-            transparent 180deg,
-            transparent 195deg,
-            rgba(255, 223, 0, 0.6) 195deg,
-            rgba(255, 223, 0, 0.6) 210deg,
-            transparent 210deg,
-            transparent 225deg,
-            rgba(255, 223, 0, 0.6) 225deg,
-            rgba(255, 223, 0, 0.6) 240deg,
-            transparent 240deg,
-            transparent 255deg,
-            rgba(255, 223, 0, 0.6) 255deg,
-            rgba(255, 223, 0, 0.6) 270deg,
-            transparent 270deg,
-            transparent 285deg,
-            rgba(255, 223, 0, 0.6) 285deg,
-            rgba(255, 223, 0, 0.6) 300deg,
-            transparent 300deg,
-            transparent 315deg,
-            rgba(255, 223, 0, 0.6) 315deg,
-            rgba(255, 223, 0, 0.6) 330deg,
-            transparent 330deg,
-            transparent 345deg,
-            rgba(255, 223, 0, 0.6) 345deg,
-            rgba(255, 223, 0, 0.6) 360deg
-          );
-        }
-
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .animate-spin-slow {
-          animation: spin-slow 20s linear infinite;
-        }
-
-        /* Modal 進場動畫 */
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out forwards;
-        }
-
-        @keyframes popIn {
-          0% { transform: scale(0.5); opacity: 0; }
-          60% { transform: scale(1.05); opacity: 1; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-popIn {
-          animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-          animation-delay: 0.1s;
-          opacity: 0;
-        }
-
-        /* 籤掉落/浮現動畫 */
-        @keyframes stickDrop {
-          from { transform: translateY(-120%); }
-          to { transform: translateY(0); }
-        }
-        .animate-stickDrop {
-          animation: stickDrop 0.5s ease-out forwards;
-        }
-
-        /* 豎排文字 Helper */
-        .writing-vertical {
-          writing-mode: vertical-rl;
-          text-orientation: upright;
-        }
-      `}</style>
-    </div>
-  );
-}
-
-// 最終修正版 SVG
-function FinalRabbitDaruma() {
-  return (
-    <svg width="300" height="300" viewBox="0 0 300 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <radialGradient id="darumaGradient" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(150 180) rotate(90) scale(140 160)">
-          <stop stopColor="#FF4D4D" />
-          <stop offset="0.6" stopColor="#D91A1A" />
-          <stop offset="1" stopColor="#990000" />
-        </radialGradient>
-        
-        <linearGradient id="goldGradient" x1="150" y1="180" x2="150" y2="280" gradientUnits="userSpaceOnUse">
-          <stop stopColor="#FFEA85" />
-          <stop offset="1" stopColor="#FFD700" />
-        </linearGradient>
-
-        <filter id="softGlow" x="-10" y="0" width="320" height="320" filterUnits="userSpaceOnUse">
-          <feDropShadow dx="0" dy="5" stdDeviation="6" floodColor="#990000" floodOpacity="0.3" />
-        </filter>
-      </defs>
-
-      {/* 身體：圓潤蛋形/梨形，底部加寬 */}
-      <path 
-        d="M60 180 C60 100 90 60 150 60 C210 60 240 100 240 180 C240 250 210 280 150 280 C90 280 60 250 60 180Z" 
-        fill="url(#darumaGradient)" 
-        stroke="#800000" 
-        strokeWidth="0" 
-        filter="url(#softGlow)"
-      />
-      
-      {/* 耳朵：加寬、移除內耳粉色、顏色與頭頂紅色一致 */}
-      {/* 左耳：使用身體的紅色漸層色 D91A1A 或身體底色 */}
-      <path d="M120 70 C110 35 90 35 100 80 C105 90 125 90 120 70Z" fill="#D91A1A" />
-      {/* 右耳 */}
-      <path d="M180 70 C190 35 210 35 200 80 C195 90 175 90 180 70Z" fill="#D91A1A" />
-      
-      {/* 移除了內耳粉色圓點，使其看起來是身體的延伸 */}
-
-      {/* 臉部區域：米白色 (暖色調) */}
-      <path 
-        d="M95 135 C95 105 115 95 150 95 C185 95 205 105 205 135 C205 160 185 170 150 170 C115 170 95 160 95 135Z" 
-        fill="#FFF8F0" 
-      />
-
-      {/* 眉毛 */}
-      <path d="M115 120 Q125 115 130 120" stroke="#333" strokeWidth="3" strokeLinecap="round" fill="none" />
-      <path d="M170 120 Q175 115 185 120" stroke="#333" strokeWidth="3" strokeLinecap="round" fill="none" />
-
-      {/* 眼睛 */}
-      <circle cx="125" cy="132" r="6" fill="#222" />
-      <circle cx="175" cy="132" r="6" fill="#222" />
-      <circle cx="127" cy="130" r="2" fill="white" />
-      <circle cx="177" cy="130" r="2" fill="white" />
-
-      {/* 腮紅 */}
-      <circle cx="105" cy="140" r="8" fill="#FFB6C1" opacity="0.5" />
-      <circle cx="195" cy="140" r="8" fill="#FFB6C1" opacity="0.5" />
-
-      {/* 鼻子嘴巴 */}
-      <path d="M146 142 L154 142 L150 147 Z" fill="#FF9999" />
-      <path d="M150 147 Q145 153 140 150 M150 147 Q155 153 160 150" stroke="#333" strokeWidth="2" fill="none" strokeLinecap="round" />
-
-      {/* 肚子：超級大 */}
-      <circle cx="150" cy="225" r="50" fill="url(#goldGradient)" stroke="#FDB931" strokeWidth="4" />
-      
-      {/* 肚子文字 */}
-      <text 
-        x="150" 
-        y="228" 
-        textAnchor="middle" 
-        dominantBaseline="central" 
-        fontSize="32" 
-        fontWeight="900" 
-        fill="#B22222"
-        fontFamily="sans-serif"
-        style={{ letterSpacing: '2px' }}
-      >
-        福吉兔
-      </text>
-
-      {/* 肚子兩側裝飾線 */}
-      <path d="M70 200 Q90 220 70 250" stroke="#FFD700" strokeWidth="4" fill="none" opacity="0.6" strokeLinecap="round" />
-      <path d="M230 200 Q210 220 230 250" stroke="#FFD700" strokeWidth="4" fill="none" opacity="0.6" strokeLinecap="round" />
-    </svg>
-  );
-}
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
